@@ -214,7 +214,7 @@ explain the variance in the response variable as effectively. The
 skewness indicates that while the model is generally reliable, there are
 conditions under which its predictive power may decrease.
 
-A more pronounced left skew in the distribution of log(β<sup>​1​∗β</sup>​2​)
+A more pronounced left skew in the distribution of log(beta1\*beta2)
 estimates indicates that the product of these coefficients tends to be
 higher in most bootstrap samples, but with a greater tendency towards
 lower values in some samples than observed in the R-squared
@@ -226,7 +226,7 @@ to specific sample variations, possibly due to interactions between
 variables or the influence of outliers.
 
 The distribution of R-squared estimates is much more narrower than the
-distribution of log(β<sup>​1​∗β</sup>​2​) estimates, indicating that the
+distribution of log(beta1\*beta2) estimates, indicating that the
 estimates for R-squared values are more precise.
 
 ## Problem three
