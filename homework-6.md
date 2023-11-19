@@ -10,6 +10,8 @@ library(purrr)
 library(tidyr)
 library(ggplot2)
 library(boot)
+library(forcats)
+library(modelr)
 ```
 
 ## Problem One
@@ -226,3 +228,83 @@ variables or the influence of outliers.
 The distribution of R-squared estimates is much more narrower than the
 distribution of log(β<sup>​1​∗β</sup>​2​) estimates, indicating that the
 estimates for R-squared values are more precise.
+
+## Problem three
+
+``` r
+birthweight_df = read.csv("./data/birthweight.csv")|>
+  mutate(babysex = ifelse(babysex == 1, 1, 0))|>
+  mutate(
+    babysex = factor(babysex),
+    frace = factor(frace),
+    mrace = factor(mrace),
+    frace = fct_infreq(frace),
+    mrace = fct_infreq(mrace))
+# Reading and transforming the data
+```
+
+#### Our model will contain wtgain, momage and smoken as predictors for bwt.
+
+``` r
+lm_model = lm(bwt ~ wtgain + momage + smoken, data = birthweight_df)
+# Fit the model
+
+prediction_result = birthweight_df|>
+  add_predictions(lm_model, var = "fitted_values")|>
+  add_residuals(lm_model, var = "residuals")
+# Add predictions and residuals to the dataframe
+
+ggplot(prediction_result, aes(x = fitted(lm_model), y = residuals)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(x = "Fitted Values", y = "Residuals", title = "Plot of Residuals vs Fitted Values") +
+  theme_minimal()
+```
+
+![](homework-6_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+``` r
+# Plotting residuals against fitted values
+```
+
+#### Compare your model to two others:
+
+``` r
+cv_df = 
+  crossv_mc(birthweight_df, 100)
+  
+cv_df =
+  cv_df |> 
+  mutate(
+    train = map(train, as_tibble),
+    test = map(test, as_tibble))
+
+cv_df = 
+  cv_df |> 
+  mutate(
+    proposed_mod  = map(train, \(df) lm(bwt ~ wtgain + momage + smoken, data = df)),
+    length_gestation_mod  = map(train, \(df) lm(bwt ~  blength + gaweeks, data = df)),
+    interact_mod  = map(train, \(df) lm(bwt ~  bhead + blength + babysex + bhead * blength + blength* babysex + bhead* babysex + bhead * blength * babysex, data = df))) |> 
+  mutate(
+    rmse_proposed = map2_dbl(proposed_mod, test, \(mod, df) rmse(model = mod, data = df)),
+    rmse_length_gestation = map2_dbl(length_gestation_mod, test, \(mod, df) rmse(model = mod, data = df)),
+    rmse_interact = map2_dbl(interact_mod, test, \(mod, df) rmse(model = mod, data = df)))
+
+cv_df |> 
+  select(starts_with("rmse")) |> 
+  pivot_longer(
+    everything(),
+    names_to = "model", 
+    values_to = "rmse",
+    names_prefix = "rmse_") |> 
+  mutate(model = fct_inorder(model)) |> 
+  ggplot(aes(x = model, y = rmse)) + geom_violin()
+```
+
+![](homework-6_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+#### Discussion:
+
+In the plot, the model with interaction have the lowest RMSE, which
+tells it is the model with best predictivity. Our proposed model has
+highest rmse and least predictivity.
