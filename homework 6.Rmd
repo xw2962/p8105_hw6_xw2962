@@ -75,13 +75,13 @@ fit_glm_city = function(city_data) {
 }
 # Create a function to fit logistic regression for a given city's data
 
-result_list = homicide_data_tidy %>%
+result_list = homicide_data_tidy  |> 
   mutate(victim_race = factor(victim_race),
-         victim_sex = factor(victim_sex)) %>%
-  group_by(city_state) %>%
-  nest() %>%
-  filter(city_state != "Tulsa, AL") %>%
-  mutate(glm_result = map(data, fit_glm_city)) %>%
+         victim_sex = factor(victim_sex)) |>
+  group_by(city_state) |>
+  nest() |>
+  filter(city_state != "Tulsa, AL") |>
+  mutate(glm_result = map(data, fit_glm_city)) |>
   unnest(glm_result)
 # Applying the function to each city in the dataset
 ```
@@ -120,19 +120,19 @@ weather_df =
 
 ```{r, warning=FALSE}
 # Function to perform linear regression and extract the required quantities
-bootstrap_function <- function(data, indices) {
+bootstrap_function = function(data, indices) {
   # Sample the data
-  boot_data <- data[indices,]
+  boot_data = data[indices,]
   
   # Fit the linear regression model
-  model <- lm(tmax ~ tmin + prcp, data = boot_data)
+  model = lm(tmax ~ tmin + prcp, data = boot_data)
   
   # Extract R-squared
-  r_squared <- glance(model)$r.squared
+  r_squared = glance(model)$r.squared
   
   # Extract coefficients and compute log(beta1 * beta2)
-  coefs <- tidy(model)
-  log_product <- log(coefs$estimate[2] * coefs$estimate[3])
+  coefs = tidy(model)
+  log_product = log(coefs$estimate[2] * coefs$estimate[3])
   
   return(c(r_squared, log_product))
 }
@@ -157,8 +157,8 @@ ggplot() +
   theme_minimal()
 
 # Calculating 95% Confidence Intervals
-ci_r_squared <- quantile(r_squared_dist, c(0.025, 0.975), na.rm = TRUE)
-ci_log_product <- quantile(log_product_dist, c(0.025, 0.975), na.rm = TRUE)
+ci_r_squared = quantile(r_squared_dist, c(0.025, 0.975), na.rm = TRUE)
+ci_log_product = quantile(log_product_dist, c(0.025, 0.975), na.rm = TRUE)
 
 list(CI_R_squared = ci_r_squared, CI_Log_Product = ci_log_product)
 ```
