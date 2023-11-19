@@ -11,6 +11,7 @@ library(broom)
 library(purrr)
 library(tidyr)
 library(ggplot2)
+library(boot)
 ```
 
 ## Problem One 
@@ -100,3 +101,69 @@ ggplot(result_list, aes(y = OR, x = reorder(city_state, OR))) +
 Here, we can see that Albuquerque, NM has the highest OR, that is greatest likelihood of homicide cases being solved. And New York, NY has the least OR, that is least likelihood of homicide cases being solved. Also, we can see that higher ORs are accompanied with larger confidence intervals(longer length of the error bar). 
 
 ## Problem Two 
+```{r}
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2022-01-01",
+    date_max = "2022-12-31") |>
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) |>
+  select(name, id, everything())
+# Download data
+```
+
+```{r, warning=FALSE}
+# Function to perform linear regression and extract the required quantities
+bootstrap_function <- function(data, indices) {
+  # Sample the data
+  boot_data <- data[indices,]
+  
+  # Fit the linear regression model
+  model <- lm(tmax ~ tmin + prcp, data = boot_data)
+  
+  # Extract R-squared
+  r_squared <- glance(model)$r.squared
+  
+  # Extract coefficients and compute log(beta1 * beta2)
+  coefs <- tidy(model)
+  log_product <- log(coefs$estimate[2] * coefs$estimate[3])
+  
+  return(c(r_squared, log_product))
+}
+
+# Perform the bootstrap
+set.seed(123)  # For reproducibility
+bootstrap_results = boot(data = weather_df, statistic = bootstrap_function, R = 5000)
+
+# Extract results
+r_squared_dist = bootstrap_results$t[,1]
+log_product_dist = bootstrap_results$t[,2]
+
+# Plotting the distributions
+ggplot() +
+  geom_histogram(aes(x = r_squared_dist), binwidth = 0.01, fill = "blue", alpha = 0.7) +
+  labs(title = "Distribution of R-squared Estimates", x = "R-squared", y = "Frequency") +
+  theme_minimal()
+
+ggplot() +
+  geom_histogram(aes(x = log_product_dist), binwidth = 0.1, fill = "red", alpha = 0.7) +
+  labs(title = "Distribution of Log(Beta1 * Beta2) Estimates", x = "Log(Beta1 * Beta2)", y = "Frequency") +
+  theme_minimal()
+
+# Calculating 95% Confidence Intervals
+ci_r_squared <- quantile(r_squared_dist, c(0.025, 0.975), na.rm = TRUE)
+ci_log_product <- quantile(log_product_dist, c(0.025, 0.975), na.rm = TRUE)
+
+list(CI_R_squared = ci_r_squared, CI_Log_Product = ci_log_product)
+```
+
+#### Discussion of the plots 
+A left-skewed distribution for the R-squared estimates suggests that most bootstrap samples yield higher R-squared values, with fewer samples resulting in lower R-squared values. This could mean that the model generally fits well, but there are instances (or specific samples) where the fit significantly worsens. The tail on the lower end could be due to outliers or certain sample combinations where the predictors do not explain the variance in the response variable as effectively. The skewness indicates that while the model is generally reliable, there are conditions under which its predictive power may decrease. 
+
+A more pronounced left skew in the distribution of log(β^​1​∗β^​2​) estimates indicates that the product of these coefficients tends to be higher in most bootstrap samples, but with a greater tendency towards lower values in some samples than observed in the R-squared distribution. This could suggest that while the relationship captured by these coefficients is generally consistent, there are more frequent instances where this relationship diminishes or is less pronounced. The greater skewness might reflect higher sensitivity of these coefficients to specific sample variations, possibly due to interactions between variables or the influence of outliers.
+
+The distribution of R-squared estimates is much more narrower than the distribution of log(β^​1​∗β^​2​) estimates, indicating that the estimates for R-squared values are more precise. 
