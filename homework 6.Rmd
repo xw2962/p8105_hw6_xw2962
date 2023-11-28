@@ -164,9 +164,9 @@ list(CI_R_squared = ci_r_squared, CI_Log_Product = ci_log_product)
 ```
 
 #### Discussion of the plots 
-A left-skewed distribution for the R-squared estimates suggests that most bootstrap samples yield higher R-squared values, with fewer samples resulting in lower R-squared values. This could mean that the model generally fits well, but there are instances (or specific samples) where the fit significantly worsens. The tail on the lower end could be due to outliers or certain sample combinations where the predictors do not explain the variance in the response variable as effectively. The skewness indicates that while the model is generally reliable, there are conditions under which its predictive power may decrease. 
+A left-skewed distribution for the R-squared estimates suggests that most bootstrap samples yield higher R-squared values, with fewer samples resulting in lower R-squared values. This could mean that the model generally fits well, but there are instances (or specific samples) where the fit significantly worsens. The tail on the lower end could be due to outliers or certain sample combinations where the predictors do not explain the variance in the response variable as effectively. The skewness indicates that while the model is generally reliable, there are conditions under which its predictive power may decrease. The 2.5% and  97.5% quantile of coefficient product's log is shown above.
 
-A more pronounced left skew in the distribution of log(beta1*beta2) estimates indicates that the product of these coefficients tends to be higher in most bootstrap samples, but with a greater tendency towards lower values in some samples than observed in the R-squared distribution. This could suggest that while the relationship captured by these coefficients is generally consistent, there are more frequent instances where this relationship diminishes or is less pronounced. The greater skewness might reflect higher sensitivity of these coefficients to specific sample variations, possibly due to interactions between variables or the influence of outliers.
+A more pronounced left skew in the distribution of log(beta1*beta2) estimates indicates that the product of these coefficients tends to be higher in most bootstrap samples, but with a greater tendency towards lower values in some samples than observed in the R-squared distribution. This could suggest that while the relationship captured by these coefficients is generally consistent, there are more frequent instances where this relationship diminishes or is less pronounced. The greater skewness might reflect higher sensitivity of these coefficients to specific sample variations, possibly due to interactions between variables or the influence of outliers. The 2.5% and  97.5% quantile of coefficient product's log is shown above. 
 
 The distribution of R-squared estimates is much more narrower than the distribution of log(beta1*beta2) estimates, indicating that the estimates for R-squared values are more precise. 
 
@@ -183,9 +183,20 @@ birthweight_df = read.csv("./data/birthweight.csv")|>
 # Reading and transforming the data
 ```
 
-#### Our model will contain wtgain, momage and smoken as predictors for bwt. 
+#### Discussions on Predictor Choosing 
+First, for avoiding the data leakage, we want to exclude variables like babysex, bhead (baby's head circumference), and blength (baby's length), which are known only after birth. Then, for addressing potential multicollinearity issues,  we would like to drop ppbmi (pre-pregnancy BMI) and wtgain (weight gain during pregnancy) as these might be calculated from other variables like pre-pregnancy weight (ppwt) and mother's height (mheight). Finally, we made the decision to exclude malform (malformation) due to uncertainty about whether it is detected before or after birth. 
+
+Then, we want to first fit a model and make final decisions on which variables to keep:
 ```{r}
-lm_model = lm(bwt ~ wtgain + momage + smoken, data = birthweight_df)
+test_lm = lm(bwt ~  smoken + ppwt + frace + parity + momage + mrace + mheight + pnumlbw + pnumsga + fincome +  menarche + gaweeks + delwt, data = birthweight_df)
+summary(test_lm)
+```
+
+We did see collinearity in our dataset since we see the NA coefficients in the result. Thus, we will exclude pnumsga and pnumlbw in our analysis. Finally by looking at the coefficients we got, we found delwt,gaweeks, smoken, ppwt and mheight are the most significant variables.  
+
+#### Our model will contain delwt,gaweeks, smoken, ppwt and mheight as predictors for bwt. 
+```{r}
+lm_model = lm(bwt ~ delwt + gaweeks + smoken+ppwt+mheight, data = birthweight_df)
 # Fit the model
 
 prediction_result = birthweight_df|>
@@ -200,6 +211,9 @@ ggplot(prediction_result, aes(x = fitted(lm_model), y = residuals)) +
   theme_minimal()
 # Plotting residuals against fitted values
 ```
+
+We can see from the plot that the residuals scatter around 0 evenly. 
+
 #### Compare your model to two others:
 ```{r}
 cv_df = 

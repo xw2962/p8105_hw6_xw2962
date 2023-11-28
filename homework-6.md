@@ -212,7 +212,8 @@ the fit significantly worsens. The tail on the lower end could be due to
 outliers or certain sample combinations where the predictors do not
 explain the variance in the response variable as effectively. The
 skewness indicates that while the model is generally reliable, there are
-conditions under which its predictive power may decrease.
+conditions under which its predictive power may decrease. The 2.5% and
+97.5% quantile of coefficient product’s log is shown above.
 
 A more pronounced left skew in the distribution of log(beta1\*beta2)
 estimates indicates that the product of these coefficients tends to be
@@ -223,7 +224,8 @@ these coefficients is generally consistent, there are more frequent
 instances where this relationship diminishes or is less pronounced. The
 greater skewness might reflect higher sensitivity of these coefficients
 to specific sample variations, possibly due to interactions between
-variables or the influence of outliers.
+variables or the influence of outliers. The 2.5% and 97.5% quantile of
+coefficient product’s log is shown above.
 
 The distribution of R-squared estimates is much more narrower than the
 distribution of log(beta1\*beta2) estimates, indicating that the
@@ -243,10 +245,74 @@ birthweight_df = read.csv("./data/birthweight.csv")|>
 # Reading and transforming the data
 ```
 
-#### Our model will contain wtgain, momage and smoken as predictors for bwt.
+#### Discussions on Predictor Choosing
+
+First, for avoiding the data leakage, we want to exclude variables like
+babysex, bhead (baby’s head circumference), and blength (baby’s length),
+which are known only after birth. Then, for addressing potential
+multicollinearity issues, we would like to drop ppbmi (pre-pregnancy
+BMI) and wtgain (weight gain during pregnancy) as these might be
+calculated from other variables like pre-pregnancy weight (ppwt) and
+mother’s height (mheight). Finally, we made the decision to exclude
+malform (malformation) due to uncertainty about whether it is detected
+before or after birth.
+
+Then, we want to first fit a model and make final decisions on which
+variables to keep:
 
 ``` r
-lm_model = lm(bwt ~ wtgain + momage + smoken, data = birthweight_df)
+test_lm = lm(bwt ~  smoken + ppwt + frace + parity + momage + mrace + mheight + pnumlbw + pnumsga + fincome +  menarche + gaweeks + delwt, data = birthweight_df)
+summary(test_lm)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = bwt ~ smoken + ppwt + frace + parity + momage + 
+    ##     mrace + mheight + pnumlbw + pnumsga + fincome + menarche + 
+    ##     gaweeks + delwt, data = birthweight_df)
+    ## 
+    ## Residuals:
+    ##      Min       1Q   Median       3Q      Max 
+    ## -1725.89  -256.94     9.14   275.23  1499.69 
+    ## 
+    ## Coefficients: (2 not defined because of singularities)
+    ##              Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept) -504.0971   184.5320  -2.732  0.00633 ** 
+    ## smoken       -11.7913     0.8970 -13.146  < 2e-16 ***
+    ## ppwt          -5.8661     0.6669  -8.796  < 2e-16 ***
+    ## frace2      -114.6325    71.3845  -1.606  0.10838    
+    ## frace4       -83.0339    69.1452  -1.201  0.22987    
+    ## frace3       -44.3238   107.2509  -0.413  0.67943    
+    ## frace8        -6.6925   114.6373  -0.058  0.95345    
+    ## parity       100.7420    62.6169   1.609  0.10772    
+    ## momage         0.7397     1.8899   0.391  0.69552    
+    ## mrace2      -168.4335    71.2715  -2.363  0.01816 *  
+    ## mrace4       -26.0415    69.8162  -0.373  0.70917    
+    ## mrace3       -24.2838   111.2655  -0.218  0.82724    
+    ## mheight       16.5941     2.7760   5.978 2.45e-09 ***
+    ## pnumlbw            NA         NA      NA       NA    
+    ## pnumsga            NA         NA      NA       NA    
+    ## fincome        0.2628     0.2775   0.947  0.34382    
+    ## menarche      -4.0686     4.4785  -0.908  0.36367    
+    ## gaweeks       52.6034     2.1065  24.972  < 2e-16 ***
+    ## delwt          9.7528     0.6003  16.248  < 2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 421.8 on 4325 degrees of freedom
+    ## Multiple R-squared:  0.3243, Adjusted R-squared:  0.3218 
+    ## F-statistic: 129.7 on 16 and 4325 DF,  p-value: < 2.2e-16
+
+We did see collinearity in our dataset since we see the NA coefficients
+in the result. Thus, we will exclude pnumsga and pnumlbw in our
+analysis. Finally by looking at the coefficients we got, we found
+delwt,gaweeks, smoken, ppwt and mheight are the most significant
+variables.
+
+#### Our model will contain delwt,gaweeks, smoken, ppwt and mheight as predictors for bwt.
+
+``` r
+lm_model = lm(bwt ~ delwt + gaweeks + smoken+ppwt+mheight, data = birthweight_df)
 # Fit the model
 
 prediction_result = birthweight_df|>
@@ -261,11 +327,13 @@ ggplot(prediction_result, aes(x = fitted(lm_model), y = residuals)) +
   theme_minimal()
 ```
 
-![](homework-6_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](homework-6_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 ``` r
 # Plotting residuals against fitted values
 ```
+
+We can see from the plot that the residuals scatter around 0 evenly.
 
 #### Compare your model to two others:
 
@@ -301,7 +369,7 @@ cv_df |>
   ggplot(aes(x = model, y = rmse)) + geom_violin()
 ```
 
-![](homework-6_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](homework-6_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 #### Discussion:
 
