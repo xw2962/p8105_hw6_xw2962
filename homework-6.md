@@ -376,3 +376,18 @@ cv_df |>
 In the plot, the model with interaction have the lowest RMSE, which
 tells it is the model with best predictivity. Our proposed model has
 highest rmse and least predictivity.
+
+This may be due to the variables ‘wtgain’ (weight gain during
+pregnancy), ‘momage’ (mother’s age), and ‘smoken’ (smoking status) might
+not be as strongly or directly correlated with the baby’s birth weight
+(‘bwt’) as the variables in the other models. For example, ‘blength’
+(baby’s length) and ‘gaweeks’ (gestational weeks) used in the
+length_gestation_mod are more directly related to the baby’s development
+and hence, birth weight.
+
+The interact_mod, which performed the best, included interaction terms
+among ‘bhead’, ‘blength’, and ‘babysex’. This suggests that the
+relationship between these predictors and birth weight is not just
+linear but also involves complex interactions. Our proposed model did
+not account for such interactions, which might be crucial in predicting
+birth weight more accurately.
