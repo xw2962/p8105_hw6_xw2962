@@ -323,7 +323,7 @@ variables.
 #### Our model will contain delwt,gaweeks, smoken, ppwt and mheight as predictors for bwt.
 
 ``` r
-lm_model = lm(bwt ~ delwt + gaweeks + smoken+ppwt+mheight, data = birthweight_df)
+lm_model = lm(bwt ~ delwt + gaweeks + smoken + ppwt + mheight, data = birthweight_df)
 # Fit the model
 
 prediction_result = birthweight_df|>
@@ -361,7 +361,7 @@ cv_df =
 cv_df = 
   cv_df |> 
   mutate(
-    proposed_mod  = map(train, \(df) lm(bwt ~ wtgain + momage + smoken, data = df)),
+    proposed_mod  = map(train, \(df) lm(bwt ~ delwt + gaweeks + smoken + ppwt + mheight, data = df)),
     length_gestation_mod  = map(train, \(df) lm(bwt ~  blength + gaweeks, data = df)),
     interact_mod  = map(train, \(df) lm(bwt ~  bhead + blength + babysex + bhead * blength + blength* babysex + bhead* babysex + bhead * blength * babysex, data = df))) |> 
   mutate(
