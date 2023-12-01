@@ -239,6 +239,7 @@ birthweight_df = read.csv("./data/birthweight.csv")|>
   mutate(
     babysex = factor(babysex),
     frace = factor(frace),
+    malform = factor(malform),
     mrace = factor(mrace),
     frace = fct_infreq(frace),
     mrace = fct_infreq(mrace))
