@@ -246,6 +246,16 @@ birthweight_df = read.csv("./data/birthweight.csv")|>
 # Reading and transforming the data
 ```
 
+``` r
+sum(is.na(birthweight_df))
+```
+
+    ## [1] 0
+
+``` r
+# check for missing values 
+```
+
 #### Discussions on Predictor Choosing
 
 First, for avoiding the data leakage, we want to exclude variables like
@@ -328,7 +338,7 @@ ggplot(prediction_result, aes(x = fitted(lm_model), y = residuals)) +
   theme_minimal()
 ```
 
-![](homework-6_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](homework-6_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 ``` r
 # Plotting residuals against fitted values
@@ -370,7 +380,7 @@ cv_df |>
   ggplot(aes(x = model, y = rmse)) + geom_violin()
 ```
 
-![](homework-6_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](homework-6_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 #### Discussion:
 

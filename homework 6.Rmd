@@ -184,6 +184,11 @@ birthweight_df = read.csv("./data/birthweight.csv")|>
 # Reading and transforming the data
 ```
 
+```{r}
+sum(is.na(birthweight_df))
+# check for missing values 
+```
+
 #### Discussions on Predictor Choosing 
 First, for avoiding the data leakage, we want to exclude variables like babysex, bhead (baby's head circumference), and blength (baby's length), which are known only after birth. Then, for addressing potential multicollinearity issues,  we would like to drop ppbmi (pre-pregnancy BMI) and wtgain (weight gain during pregnancy) as these might be calculated from other variables like pre-pregnancy weight (ppwt) and mother's height (mheight). Finally, we made the decision to exclude malform (malformation) due to uncertainty about whether it is detected before or after birth. 
 
