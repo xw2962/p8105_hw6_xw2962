@@ -168,10 +168,10 @@ bootstrap_results = boot(data = weather_df, statistic = bootstrap_function, R = 
 r_squared_dist = bootstrap_results$t[,1]
 log_product_dist = bootstrap_results$t[,2]
 
-# Plotting the distributions
+# Plotting the distributions as density plots
 ggplot() +
-  geom_histogram(aes(x = r_squared_dist), binwidth = 0.01, fill = "blue", alpha = 0.7) +
-  labs(title = "Distribution of R-squared Estimates", x = "R-squared", y = "Frequency") +
+  geom_density(aes(x = r_squared_dist), alpha = 0.7) +
+  labs(title = "Density Plot of R-squared Estimates", x = "R-squared", y = "Density") +
   theme_minimal()
 ```
 
@@ -179,8 +179,8 @@ ggplot() +
 
 ``` r
 ggplot() +
-  geom_histogram(aes(x = log_product_dist), binwidth = 0.1, fill = "red", alpha = 0.7) +
-  labs(title = "Distribution of Log(Beta1 * Beta2) Estimates", x = "Log(Beta1 * Beta2)", y = "Frequency") +
+  geom_density(aes(x = log_product_dist),  alpha = 0.7) +
+  labs(title = "Density Plot of Log(Beta1 * Beta2) Estimates", x = "Log(Beta1 * Beta2)", y = "Density") +
   theme_minimal()
 ```
 
